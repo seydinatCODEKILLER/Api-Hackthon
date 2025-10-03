@@ -1,0 +1,35 @@
+{
+  "name": "api-hackathon",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "prisma:init": "npx prisma init",
+    "prisma:push": "npx prisma db push",
+    "prisma:generate": "npx prisma generate",
+    "prisma:studio": "npx prisma studio",
+    "db:reset": "npx prisma db push --force-reset && npx prisma generate",
+    "build": "npx prisma generate"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.18.1",
+    "@hono/zod-validator": "^0.7.2",
+    "@prisma/client": "^6.16.2",
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.7.0",
+    "dotenv": "^17.2.1",
+    "hono": "^4.8.12",
+    "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "qrcode": "^1.5.4",
+    "zod": "^4.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "nodemon": "^3.1.10",
+    "prisma": "^6.16.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  }
+}
