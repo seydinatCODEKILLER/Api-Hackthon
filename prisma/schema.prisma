@@ -28,9 +28,25 @@ enum Lang {
   WO
 }
 
+enum TargetType {
+  PANORAMA
+  ARTWORK
+}
+
 enum TranslationStatus {
   draft
   published
+}
+
+enum RoomType {
+  MODERN_ART    // Salle art moderne
+  HISTORY       // Salle histoire
+}
+
+enum HotspotType {
+  NAVIGATION
+  ARTWORK
+  INFO
 }
 
 model User {
@@ -70,6 +86,7 @@ model Artwork {
   createdAt     DateTime @default(now())
   artistId      String   @db.ObjectId
   artist        Artist   @relation(fields: [artistId], references: [id])
+  roomType      RoomType? @default(MODERN_ART)
 
   viewCount     Int      @default(0)
   lastViewedAt  DateTime?
@@ -116,4 +133,29 @@ model View {
   artwork   Artwork  @relation(fields: [artworkId], references: [id])
 
   @@map("views")
+}
+
+model Panorama {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String
+  roomType    RoomType    
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  hotspots    Hotspot[]
+}
+
+model Hotspot {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  panorama    Panorama   @relation(fields: [panoramaId], references: [id])
+  panoramaId  String     @db.ObjectId
+  x           Float      // Position horizontale (-180 à 180)
+  y           Float      // Position verticale (-90 à 90)
+  targetType  TargetType // PANORAMA ou ARTWORK
+  targetId    String     // ID de la cible
+  label       String?    // Texte affiché
+  hotspotType HotspotType 
+  createdAt   DateTime   @default(now())
 }
