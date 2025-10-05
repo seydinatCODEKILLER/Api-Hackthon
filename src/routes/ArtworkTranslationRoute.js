@@ -11,13 +11,12 @@ export default class ArtworkTranslationRoute {
   }
 
   setupRoutes() {
-    this.router.use("*", this.authMiddleware.protect(["admin"]));
 
     this.router.get("/", (ctx) => this.controller.getAllTranslations(ctx));
     this.router.get("/:id", (ctx) => this.controller.getTranslation(ctx));
-    this.router.post("/", (ctx) => this.controller.createTranslation(ctx));
-    this.router.put("/:id", (ctx) => this.controller.updateTranslation(ctx));
-    this.router.delete("/:id", (ctx) => this.controller.deleteTranslation(ctx));
+    this.router.post("/", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.createTranslation(ctx));
+    this.router.put("/:id", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.updateTranslation(ctx));
+    this.router.delete("/:id", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.deleteTranslation(ctx));
   }
 
   get routes() {

@@ -11,8 +11,6 @@ export default class HotspotRoute {
   }
 
   setupRoutes() {
-    // Toutes les routes hotspots sont protégées pour les admins
-    this.router.use("*", this.authMiddleware.protect(["admin"]));
 
     // Récupérer tous les hotspots (avec filtres optionnels)
     this.router.get("/", (ctx) => this.controller.getAllHotspots(ctx));
@@ -24,16 +22,16 @@ export default class HotspotRoute {
     this.router.get("/panorama/:panoramaId/artworks", (ctx) => this.controller.getArtworkHotspotsByPanorama(ctx));
 
     // Créer un nouveau hotspot
-    this.router.post("/", async (ctx) => this.controller.createHotspot(ctx));
+    this.router.post("/", this.authMiddleware.protect(["admin"]), async (ctx) => this.controller.createHotspot(ctx));
 
     // Modifier un hotspot
-    this.router.put("/:id", (ctx) => this.controller.updateHotspot(ctx));
+    this.router.put("/:id", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.updateHotspot(ctx));
 
     // Supprimer un hotspot
-    this.router.delete("/:id", (ctx) => this.controller.deleteHotspot(ctx));
+    this.router.delete("/:id", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.deleteHotspot(ctx));
 
     // Supprimer tous les hotspots d'un panorama
-    this.router.delete("/panorama/:panoramaId", (ctx) =>
+    this.router.delete("/panorama/:panoramaId", this.authMiddleware.protect(["admin"]), (ctx) =>
       this.controller.deleteHotspotsByPanorama(ctx)
     );
 

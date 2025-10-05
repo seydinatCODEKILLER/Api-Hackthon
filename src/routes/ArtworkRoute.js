@@ -11,8 +11,6 @@ export default class ArtworkRoute {
   }
 
   setupRoutes() {
-    // Toutes les routes artworks sont protégées pour les admins
-    this.router.use("*", this.authMiddleware.protect(["admin"]));
 
     // Récupérer tous les artworks avec filtres (artistSearch, pagination, etc.)
     this.router.get("/", (ctx) => this.controller.getAllArtworks(ctx));
@@ -21,18 +19,18 @@ export default class ArtworkRoute {
     this.router.get("/:id", (ctx) => this.controller.getArtwork(ctx));
 
     // Créer un nouvel artwork
-    this.router.post("/", async (ctx) => this.controller.createArtwork(ctx));
+    this.router.post("/", this.authMiddleware.protect(["admin"]), async (ctx) => this.controller.createArtwork(ctx));
 
     // Modifier un artwork
-    this.router.put("/:id", (ctx) => this.controller.updateArtwork(ctx));
+    this.router.put("/:id", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.updateArtwork(ctx));
 
     // Soft delete artwork
-    this.router.patch("/:id/delete", (ctx) =>
+    this.router.patch("/:id/delete", this.authMiddleware.protect(["admin"]), (ctx) =>
       this.controller.deleteArtwork(ctx)
     );
 
     // Restaurer un artwork
-    this.router.patch("/:id/restore", (ctx) =>
+    this.router.patch("/:id/restore", this.authMiddleware.protect(["admin"]), (ctx) =>
       this.controller.restoreArtwork(ctx)
     );
   }

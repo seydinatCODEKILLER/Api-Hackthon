@@ -12,13 +12,12 @@ export default class ArtistRoute {
   }
 
   setupRoutes() {
-    this.router.use("*", this.authMiddleware.protect(["admin"]));
     this.router.get("/", (ctx) => this.controller.getAllArtists(ctx));
     this.router.get("/:id", (ctx) => this.controller.getArtist(ctx));
-    this.router.post("/", async (ctx) => this.controller.createArtist(ctx));
-    this.router.put("/:id", (ctx) => this.controller.updateArtist(ctx));
-    this.router.patch("/:id/delete", (ctx) => this.controller.deleteArtist(ctx));
-    this.router.patch("/:id/restore", (ctx) => this.controller.restoreArtist(ctx));
+    this.router.post("/", this.authMiddleware.protect(["admin"]), async (ctx) => this.controller.createArtist(ctx));
+    this.router.put("/:id", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.updateArtist(ctx));
+    this.router.patch("/:id/delete", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.deleteArtist(ctx));
+    this.router.patch("/:id/restore", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.restoreArtist(ctx));
   }
 
   get routes() {

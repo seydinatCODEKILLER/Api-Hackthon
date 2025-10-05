@@ -11,14 +11,12 @@ export default class ArtworkMediaRoute {
   }
 
   setupRoutes() {
-    // Middleware de protection (admin uniquement)
-    this.router.use("*", this.authMiddleware.protect(["admin"]));
 
     // Ajouter un média à un artwork
-    this.router.post("/:id", (ctx) => this.controller.addMedia(ctx));
+    this.router.post("/:id", this.authMiddleware.protect(["admin"]) ,(ctx) => this.controller.addMedia(ctx));
 
     // Supprimer un média
-    this.router.delete("/media/:mediaId", (ctx) => this.controller.deleteMedia(ctx));
+    this.router.delete("/media/:mediaId", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.deleteMedia(ctx));
 
     // Récupérer tous les médias d’un artwork
     this.router.get("/:artworkId/media", (ctx) => this.controller.getMediaByArtwork(ctx));
