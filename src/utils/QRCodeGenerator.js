@@ -72,7 +72,7 @@ export default class QRCodeGenerator {
       id: artworkId,
       title: artworkTitle,
       timestamp: new Date().toISOString(),
-      appUrl: `${process.env.APP_URL}/artworks/${artworkId}`
+      appUrl: `${process.env.APP_URL}/artwork/${artworkId}`
     });
 
     const qrOptions = {
