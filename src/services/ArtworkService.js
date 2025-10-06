@@ -131,28 +131,24 @@ export default class ArtworkService {
    * @param {Object} data - { title? }
    * @returns {Promise<Object>} Artwork mis à jour
    */
-  async updateArtwork(artworkId,data) {
+  async updateArtwork(artworkId, data) {
     const artwork = await prisma.artwork.findUnique({
       where: { id: artworkId },
     });
     if (!artwork) throw new AppError("Artwork non trouvé", 404);
 
+    // Si on change le titre, on peut regénérer le QR code
     let qrCodeImageUrl = artwork.qrCodeImageUrl;
-
-    // Si le titre change, regénérer le QR code avec le vrai artworkId
     if (data.title && data.title !== artwork.title) {
       try {
         qrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
-          artwork.id, // <- utiliser l'ID réel
+          artworkId, // <-- passer l'ID réel
           data.title
         );
-
-        // Supprimer l'ancien QR code si il existait
+        // Optionnel: supprimer l'ancien QR code
         if (artwork.qrCodeImageUrl) {
           await this.qrCodeGenerator.deleteByUrl(artwork.qrCodeImageUrl);
         }
-
-        data.qrCode = `artwork_${artwork.id}`;
       } catch (error) {
         throw new AppError("Erreur génération QR code", 500);
       }
