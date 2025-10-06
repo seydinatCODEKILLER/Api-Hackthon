@@ -1,5 +1,6 @@
 import QRCode from 'qrcode';
 import cloudinary from "../config/cloudinary.js";
+import { env } from '../config/env.js';
 
 export default class QRCodeGenerator {
   constructor() {
@@ -72,7 +73,7 @@ export default class QRCodeGenerator {
       id: artworkId,
       title: artworkTitle,
       timestamp: new Date().toISOString(),
-      appUrl: `${process.env.APP_URL}/artwork/${artworkId}`
+      appUrl: `${env.APP_URL}/artwork/${artworkId}`
     });
 
     const qrOptions = {

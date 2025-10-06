@@ -10,4 +10,5 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_DURATION: process.env.JWT_DURATION,
   HOST: process.env.HOST || "localhost",
+  APP_URL: process.env.APP_URL,
 };
