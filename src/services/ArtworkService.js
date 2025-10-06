@@ -7,7 +7,7 @@ export default class ArtworkService {
     this.qrCodeGenerator = new QRCodeGenerator();
   }
 
-    /**
+  /**
    * Récupère tous les artworks avec filtrage possible par nom/prénom d'artiste
    * @param {Object} options
    * @param {string} options.artistSearch - Nom ou prénom de l'artiste à filtrer
@@ -78,30 +78,29 @@ export default class ArtworkService {
    * @returns {Promise<Object>} Artwork créé
    */
   async createArtwork({ title, artistId }) {
-    const artist = await prisma.artist.findUnique({
-      where: { id: artistId },
-    });
+    const artist = await prisma.artist.findUnique({ where: { id: artistId } });
     if (!artist) throw new AppError("Artiste non trouvé", 404);
 
-    const qrCodeData = `${artistId}_${Date.now()}`;
-    let qrCodeImageUrl = null;
+    // Crée l'artwork d'abord
+    const artwork = await prisma.artwork.create({
+      data: { title, artistId },
+    });
 
+    // Ensuite génère le QR code avec l'ID réel
+    let qrCodeImageUrl = null;
     try {
       qrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
-        qrCodeData,
+        artwork.id, // <- ici le vrai ID
         title
       );
 
-      const artwork = await prisma.artwork.create({
-        data: {
-          title,
-          qrCode: qrCodeData,
-          qrCodeImageUrl,
-          artistId,
-        },
+      // Mets à jour l'artwork avec le QR code
+      await prisma.artwork.update({
+        where: { id: artwork.id },
+        data: { qrCodeImageUrl, qrCode: `artwork_${artwork.id}` },
       });
 
-      return artwork;
+      return { ...artwork, qrCodeImageUrl };
     } catch (error) {
       if (qrCodeImageUrl) {
         await this.qrCodeGenerator.deleteByUrl(qrCodeImageUrl);
@@ -126,27 +125,34 @@ export default class ArtworkService {
     });
   }
 
-    /**
+  /**
    * Met à jour un artwork
    * @param {string} artworkId
    * @param {Object} data - { title? }
    * @returns {Promise<Object>} Artwork mis à jour
    */
-  async updateArtwork(artworkId, data) {
+  async updateArtwork(artworkId,data) {
     const artwork = await prisma.artwork.findUnique({
-      where: { id: artworkId }
+      where: { id: artworkId },
     });
     if (!artwork) throw new AppError("Artwork non trouvé", 404);
 
-    // Si on change le titre, on peut regénérer le QR code
     let qrCodeImageUrl = artwork.qrCodeImageUrl;
+
+    // Si le titre change, regénérer le QR code avec le vrai artworkId
     if (data.title && data.title !== artwork.title) {
-      const newQrCodeData = `${artwork.artistId}_${Date.now()}`;
       try {
-        qrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(newQrCodeData, data.title);
-        // Optionnel: supprimer l'ancien QR code
-        await this.qrCodeGenerator.deleteByUrl(artwork.qrCodeImageUrl);
-        data.qrCode = newQrCodeData;
+        qrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
+          artwork.id, // <- utiliser l'ID réel
+          data.title
+        );
+
+        // Supprimer l'ancien QR code si il existait
+        if (artwork.qrCodeImageUrl) {
+          await this.qrCodeGenerator.deleteByUrl(artwork.qrCodeImageUrl);
+        }
+
+        data.qrCode = `artwork_${artwork.id}`;
       } catch (error) {
         throw new AppError("Erreur génération QR code", 500);
       }
@@ -156,14 +162,14 @@ export default class ArtworkService {
       where: { id: artworkId },
       data: {
         ...data,
-        qrCodeImageUrl
-      }
+        qrCodeImageUrl,
+      },
     });
 
     return updatedArtwork;
   }
 
-    /**
+  /**
    * Soft delete ou restore d'un artwork
    * @param {string} artworkId
    * @param {"delete"|"restore"} action
@@ -171,24 +177,29 @@ export default class ArtworkService {
    */
   async setArtworkStatus(artworkId, action) {
     const artwork = await prisma.artwork.findUnique({
-      where: { id: artworkId }
+      where: { id: artworkId },
     });
     if (!artwork) throw new AppError("Artwork non trouvé", 404);
 
     const transitions = {
       delete: { from: true, to: false },
-      restore: { from: false, to: true }
+      restore: { from: false, to: true },
     };
 
     if (!transitions[action]) throw new AppError("Action invalide", 400);
 
     const { from, to } = transitions[action];
     if (artwork.isActive !== from)
-      throw new AppError(`Action impossible: l'artwork est déjà ${artwork.isActive ? "actif" : "inactif"}`, 400);
+      throw new AppError(
+        `Action impossible: l'artwork est déjà ${
+          artwork.isActive ? "actif" : "inactif"
+        }`,
+        400
+      );
 
     await prisma.artwork.update({
       where: { id: artworkId },
-      data: { isActive: to }
+      data: { isActive: to },
     });
 
     return { id: artworkId, isActive: to };
