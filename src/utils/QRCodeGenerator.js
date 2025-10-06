@@ -68,22 +68,17 @@ export default class QRCodeGenerator {
    * @returns {Promise<string>} URL du QR code
    */
   async generateForArtwork(artworkId, artworkTitle, options = {}) {
-    const qrData = JSON.stringify({
-      type: "artwork",
-      id: artworkId,
-      title: artworkTitle,
-      timestamp: new Date().toISOString(),
-      appUrl: `${env.APP_URL}/artwork/${artworkId}`
-    });
+  const qrData = `${env.APP_URL}/artwork/${artworkId}`;
 
-    const qrOptions = {
-      prefix: `artwork_${artworkId}`,
-      folder: "hackathon/qrcodes/artworks",
-      ...options
-    };
+  const qrOptions = {
+    prefix: `artwork_${artworkId}`,
+    folder: "hackathon/qrcodes/artworks",
+    ...options
+  };
 
-    return this.generateAndUpload(qrData, qrOptions.folder, qrOptions);
-  }
+  return this.generateAndUpload(qrData, qrOptions.folder, qrOptions);
+}
+
 
   /**
    * Génère un QR code pour une URL générique
