@@ -81,9 +81,11 @@ export default class ArtworkService {
     const artist = await prisma.artist.findUnique({ where: { id: artistId } });
     if (!artist) throw new AppError("Artiste non trouvé", 404);
 
+    const qrCodePrefix = `artwork_${Date.now()}`;
+
     // Crée l'artwork d'abord
     const artwork = await prisma.artwork.create({
-      data: { title, artistId },
+      data: { title, artistId, qrCode: qrCodePrefix},
     });
 
     // Ensuite génère le QR code avec l'ID réel
