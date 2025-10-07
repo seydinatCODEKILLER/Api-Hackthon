@@ -10,6 +10,7 @@ export default class AuthRoute {
 
   setupRoutes() {
     this.router.post("/login", (ctx) => this.controller.login(ctx));
+    this.router.get("/me", (ctx) => this.controller.getCurrentUser(ctx));
   }
 
   get routes() {

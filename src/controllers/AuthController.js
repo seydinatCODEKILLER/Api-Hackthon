@@ -20,4 +20,17 @@ export default class AuthController {
       return ctx.error(error.message, error.status || 400);
     }
   }
+
+  async getCurrentUser(ctx) {
+    try {
+      const authHeader = ctx.req.header("Authorization");
+      if (!authHeader) return ctx.error("Token requis", 401);
+
+      const token = authHeader.split(" ")[1];
+      const user = await this.service.getCurrentUser(token);
+      return ctx.success(user, "Utilisateur récupéré");
+    } catch (error) {
+      return ctx.error(error.message, error.status || 401);
+    }
+  }
 }

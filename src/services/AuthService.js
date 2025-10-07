@@ -24,6 +24,19 @@ export default class AuthService {
     };
   }
 
+  async getCurrentUser(token) {
+    try {
+      const payload = this.tokenGenerator.verify(token);
+      const user = await prisma.user.findUnique({
+        where: { id: payload.id },
+      });
+      if (!user) throw new AppError("Utilisateur introuvable", 404);
+      return this.filterUserFields(user);
+    } catch {
+      throw new AppError("Token invalide", 401);
+    }
+  }
+
   filterUserFields(user) {
     const { password, ...safeFields } = user;
     return safeFields;
