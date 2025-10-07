@@ -80,15 +80,12 @@ export default class ArtworkService {
   async createArtwork({ title, artistId }) {
     const artist = await prisma.artist.findUnique({ where: { id: artistId } });
     if (!artist) throw new AppError("Artiste non trouvé", 404);
-
     const qrcodePrefix = `artwork_${Date.now()}`;
 
-    // Crée l'artwork d'abord
     const artwork = await prisma.artwork.create({
-      data: { title, artistId, qrCode: qrcodePrefix},
+      data: { title, artistId, qrCode: qrcodePrefix },
     });
 
-    // Génère le QR code unique
     let qrCodeImageUrl = null;
     try {
       qrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
@@ -98,7 +95,10 @@ export default class ArtworkService {
 
       await prisma.artwork.update({
         where: { id: artwork.id },
-        data: { qrCodeImageUrl, qrCode: `artwork_${artwork.id}_${Date.now()}` },
+        data: {
+          qrCodeImageUrl,
+          qrCode: `artwork_${artwork.id}_${Date.now()}`,
+        },
       });
 
       return { ...artwork, qrCodeImageUrl };
@@ -109,7 +109,6 @@ export default class ArtworkService {
       throw error;
     }
   }
-
   /**
    * Récupérer un artwork par son ID
    * @param {string} artworkId
@@ -139,21 +138,26 @@ export default class ArtworkService {
     if (!artwork) throw new AppError("Artwork non trouvé", 404);
 
     let qrCodeImageUrl = artwork.qrCodeImageUrl;
+    console.log("🟡 Artwork avant modification :", artwork);
 
     if (data.title && data.title !== artwork.title) {
       try {
-        const newQrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
+        console.log(`🟢 Titre modifié : "${artwork.title}" → "${data.title}"`);
+        console.log("🧩 Génération d’un nouveau QR code en cours...");
+        const qrcodePrefix = `artwork_${artworkId}_${Date.now()}`;
+        qrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
           artworkId,
-          data.title
+          data.title,
+          { prefix: qrcodePrefix }
         );
 
-        // Supprimer l'ancien QR code seulement si le nouveau a été créé
-        if (artwork.qrCodeImageUrl) {
-          await this.qrCodeGenerator.deleteByUrl(artwork.qrCodeImageUrl);
-        }
+         console.log("✅ Nouveau QR code généré :", qrCodeImageUrl);
 
-        qrCodeImageUrl = newQrCodeImageUrl;
-        data.qrCode = `artwork_${artworkId}_${Date.now()}`; // prefix unique
+        if (artwork.qrCodeImageUrl) {
+          console.log("🧹 Suppression de l’ancien QR code...");
+          await this.qrCodeGenerator.deleteByUrl(artwork.qrCodeImageUrl);
+          console.log("✅ Ancien QR code supprimé avec succès");
+        }
       } catch (error) {
         throw new AppError("Erreur génération QR code", 500);
       }
@@ -163,6 +167,7 @@ export default class ArtworkService {
       where: { id: artworkId },
       data: { ...data, qrCodeImageUrl },
     });
+    console.log("🟢 Artwork mis à jour avec succès :", updatedArtwork);
 
     return updatedArtwork;
   }
