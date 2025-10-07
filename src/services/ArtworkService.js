@@ -81,25 +81,24 @@ export default class ArtworkService {
     const artist = await prisma.artist.findUnique({ where: { id: artistId } });
     if (!artist) throw new AppError("Artiste non trouvé", 404);
 
-    const qrCodePrefix = `artwork_${Date.now()}`;
+    const qrcodePrefix = `artwork_${Date.now()}`;
 
     // Crée l'artwork d'abord
     const artwork = await prisma.artwork.create({
-      data: { title, artistId, qrCode: qrCodePrefix},
+      data: { title, artistId, qrCode: qrcodePrefix},
     });
 
-    // Ensuite génère le QR code avec l'ID réel
+    // Génère le QR code unique
     let qrCodeImageUrl = null;
     try {
       qrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
-        artwork.id, // <- ici le vrai ID
+        artwork.id,
         title
       );
 
-      // Mets à jour l'artwork avec le QR code
       await prisma.artwork.update({
         where: { id: artwork.id },
-        data: { qrCodeImageUrl, qrCode: `artwork_${artwork.id}` },
+        data: { qrCodeImageUrl, qrCode: `artwork_${artwork.id}_${Date.now()}` },
       });
 
       return { ...artwork, qrCodeImageUrl };
@@ -139,18 +138,22 @@ export default class ArtworkService {
     });
     if (!artwork) throw new AppError("Artwork non trouvé", 404);
 
-    // Si on change le titre, on peut regénérer le QR code
     let qrCodeImageUrl = artwork.qrCodeImageUrl;
+
     if (data.title && data.title !== artwork.title) {
       try {
-        qrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
-          artworkId, // <-- passer l'ID réel
+        const newQrCodeImageUrl = await this.qrCodeGenerator.generateForArtwork(
+          artworkId,
           data.title
         );
-        // Optionnel: supprimer l'ancien QR code
+
+        // Supprimer l'ancien QR code seulement si le nouveau a été créé
         if (artwork.qrCodeImageUrl) {
           await this.qrCodeGenerator.deleteByUrl(artwork.qrCodeImageUrl);
         }
+
+        qrCodeImageUrl = newQrCodeImageUrl;
+        data.qrCode = `artwork_${artworkId}_${Date.now()}`; // prefix unique
       } catch (error) {
         throw new AppError("Erreur génération QR code", 500);
       }
@@ -158,10 +161,7 @@ export default class ArtworkService {
 
     const updatedArtwork = await prisma.artwork.update({
       where: { id: artworkId },
-      data: {
-        ...data,
-        qrCodeImageUrl,
-      },
+      data: { ...data, qrCodeImageUrl },
     });
 
     return updatedArtwork;
