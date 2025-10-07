@@ -36,12 +36,15 @@ export default class ArtistSchema {
       prenom: this.#nameSchema.optional(),
       bio: this.#bioSchema.optional(),
       avatar: z
-        .instanceof(File)
-        .refine(
-          (file) => ["image/jpeg", "image/png", "image/jpg"].includes(file.type),
+      .union([
+        z.instanceof(File).refine(
+          (file) =>
+            ["image/jpeg", "image/png", "image/jpg"].includes(file.type),
           { message: "Le fichier doit être une image (jpg, jpeg, png)" }
-        )
-        .optional(),
+        ),
+        z.string().url().or(z.string().min(1)),
+      ])
+      .optional(),
     });
 
     this.#validateSchema(schema, data);
