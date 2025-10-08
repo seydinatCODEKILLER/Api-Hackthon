@@ -7,8 +7,9 @@ export default class ArtworkTranslationController {
 
   async createTranslation(ctx) {
     try {
+      const id = ctx.req.param("artworkId");
       const formData = await ctx.req.json();
-      const translation = await this.service.createTranslation(formData);
+      const translation = await this.service.createTranslation(id,formData);
       return ctx.success(translation, "Traduction créée avec succès", 201);
     } catch (error) {
       return ctx.error(error.message, 400);

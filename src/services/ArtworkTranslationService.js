@@ -55,9 +55,9 @@ export default class ArtworkTranslationService {
    * @param {Object} data - Données de traduction
    * @returns {Promise<Object>} Traduction créée
    */
-  async createTranslation(data) {
+  async createTranslation(artworkId,data) {
     const artwork = await prisma.artwork.findUnique({
-      where: { id: data.artworkId },
+      where: { id: artworkId },
     });
     if (!artwork) throw new AppError("Artwork non trouvé", 404);
 
@@ -67,7 +67,7 @@ export default class ArtworkTranslationService {
 
     // Vérifier si une traduction existe déjà pour cette langue
     const existing = await prisma.artworkTranslation.findFirst({
-      where: { artworkId: data.artworkId, lang: data.lang },
+      where: { artworkId: artworkId, lang: data.lang },
     });
     if (existing) {
       throw new AppError(
@@ -77,7 +77,8 @@ export default class ArtworkTranslationService {
     }
 
     return prisma.artworkTranslation.create({
-      data,
+      artworkId,
+      ...data,
     });
   }
 
