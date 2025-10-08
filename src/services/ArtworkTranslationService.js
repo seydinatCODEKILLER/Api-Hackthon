@@ -142,7 +142,7 @@ export default class ArtworkTranslationService {
     if (!artwork) throw new AppError("Artwork non trouvé", 404);
     return prisma.artworkTranslation.findMany({
       where: { artworkId },
-      orderBy: { type: "desc" },
+      orderBy: { lang: "desc" },
     });
   }
 }
