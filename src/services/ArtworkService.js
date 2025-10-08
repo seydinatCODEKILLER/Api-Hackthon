@@ -18,21 +18,36 @@ export default class ArtworkService {
    */
   async getAllArtworks({
     artistSearch = "",
+    titleSearch = "",
     includeInactive = false,
     page = 1,
     pageSize = 10,
   } = {}) {
-    const whereClause = {
-      ...(includeInactive ? {} : { isActive: true }),
-      artist: artistSearch
-        ? {
+      const whereClause = {
+    ...(includeInactive ? {} : { isActive: true }),
+
+    // Si recherche par artiste
+    ...(artistSearch
+      ? {
+          artist: {
             OR: [
               { nom: { contains: artistSearch, mode: "insensitive" } },
               { prenom: { contains: artistSearch, mode: "insensitive" } },
             ],
-          }
-        : undefined,
-    };
+          },
+        }
+      : {}),
+
+    // Si recherche par titre d’œuvre
+    ...(titleSearch
+      ? {
+          title: {
+            contains: titleSearch,
+            mode: "insensitive",
+          },
+        }
+      : {}),
+  };
 
     return prisma.artwork.findMany({
       where: whereClause,

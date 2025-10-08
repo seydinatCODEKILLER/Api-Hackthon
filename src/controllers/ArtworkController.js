@@ -13,6 +13,7 @@ export default class ArtworkController {
 
       const artworks = await this.service.getAllArtworks({
         artistSearch: artistSearch || "",
+        titleSearch: titleSearch || "",
         includeInactive: includeInactive === "true",
         page: parseInt(page) || 1,
         pageSize: parseInt(pageSize) || 10,
@@ -20,6 +21,7 @@ export default class ArtworkController {
 
       const total = await this.service.countArtworks({
         artistSearch: artistSearch || "",
+        titleSearch: titleSearch || "",
         includeInactive: includeInactive === "true",
       });
 
