@@ -83,4 +83,15 @@ export default class ArtworkTranslationController {
       return ctx.error(error.message, statusCode);
     }
   }
+
+  // Récupérer tous les médias d’un artwork
+  async getTranslationByArtwork(ctx) {
+    try {
+      const artworkId = ctx.req.param("artworkId");
+      const medias = await this.service.getTranslationByArtwork(artworkId);
+      return ctx.success(medias, "Liste des translations récupérée");
+    } catch (error) {
+      return ctx.error(error.message, 400);
+    }
+  }
 }

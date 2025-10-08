@@ -130,4 +130,18 @@ export default class ArtworkTranslationService {
 
     return { id: translationId, deleted: true };
   }
+
+    /**
+   * Récupère tous les translation d'un artwork
+   */
+  async getTranslationByArtwork(artworkId) {
+    const artwork = await prisma.artwork.findUnique({
+      where: { id: artworkId },
+    });
+    if (!artwork) throw new AppError("Artwork non trouvé", 404);
+    return prisma.artworkTranslation.findMany({
+      where: { artworkId },
+      orderBy: { type: "desc" },
+    });
+  }
 }

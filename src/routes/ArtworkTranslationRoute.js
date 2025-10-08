@@ -14,6 +14,7 @@ export default class ArtworkTranslationRoute {
 
     this.router.get("/", (ctx) => this.controller.getAllTranslations(ctx));
     this.router.get("/:id", (ctx) => this.controller.getTranslation(ctx));
+    this.router.get("/:artworkId/translations", (ctx) => this.controller.getTranslationByArtwork(ctx));
     this.router.post("/", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.createTranslation(ctx));
     this.router.put("/:id", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.updateTranslation(ctx));
     this.router.delete("/:id", this.authMiddleware.protect(["admin"]), (ctx) => this.controller.deleteTranslation(ctx));
