@@ -9,7 +9,7 @@ export default class ArtworkController {
 
   async getAllArtworks(ctx) {
     try {
-      const { artistSearch, includeInactive, page, pageSize } = ctx.req.query();
+      const { artistSearch,titleSearch, includeInactive, page, pageSize } = ctx.req.query();
 
       const artworks = await this.service.getAllArtworks({
         artistSearch: artistSearch || "",
