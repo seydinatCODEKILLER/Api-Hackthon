@@ -2,7 +2,6 @@ import { prisma } from "../config/database.js";
 import AppError from "../utils/AppError.js";
 
 export default class ArtworkTranslationService {
-
   /**
    * Récupérer toutes les traductions (avec pagination, filtre langue, statut, artworkId)
    * @param {Object} options
@@ -55,7 +54,7 @@ export default class ArtworkTranslationService {
    * @param {Object} data - Données de traduction
    * @returns {Promise<Object>} Traduction créée
    */
-  async createTranslation(artworkId,data) {
+  async createTranslation(artworkId, data) {
     const artwork = await prisma.artwork.findUnique({
       where: { id: artworkId },
     });
@@ -65,7 +64,6 @@ export default class ArtworkTranslationService {
       throw new AppError("La langue doit être FR, EN ou WO", 400);
     }
 
-    // Vérifier si une traduction existe déjà pour cette langue
     const existing = await prisma.artworkTranslation.findFirst({
       where: { artworkId: artworkId, lang: data.lang },
     });
@@ -77,8 +75,10 @@ export default class ArtworkTranslationService {
     }
 
     return prisma.artworkTranslation.create({
-      artworkId,
-      ...data,
+      data: {
+        artworkId,
+        ...data,
+      },
     });
   }
 
@@ -100,13 +100,12 @@ export default class ArtworkTranslationService {
    * @param {Object} data - Données à mettre à jour
    */
   async updateTranslation(translationId, data) {
-
     const translation = await prisma.artworkTranslation.findUnique({
       where: { id: translationId },
     });
     if (!translation) throw new AppError("Traduction non trouvée", 404);
     if (data.lang && !["FR", "EN", "WO"].includes(data.lang)) {
-        throw new AppError("La langue doit être FR, EN ou WO", 400);
+      throw new AppError("La langue doit être FR, EN ou WO", 400);
     }
 
     return prisma.artworkTranslation.update({
@@ -132,7 +131,7 @@ export default class ArtworkTranslationService {
     return { id: translationId, deleted: true };
   }
 
-    /**
+  /**
    * Récupère tous les translation d'un artwork
    */
   async getTranslationByArtwork(artworkId) {
